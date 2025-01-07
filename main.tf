@@ -1,3 +1,23 @@
+resource "azurerm_user_assigned_identity" "mi_container_instance" {
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  name                = "mi-${var.name}"
+  tags                = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["create_date"]
+    ]
+  }
+}
+
+resource "azurerm_role_assignment" "mi_acr_pull" {
+  depends_on = [ azurerm_user_assigned_identity.mi_container_instance ]
+  count                = var.azure_container_registry_id == null ? 0 : 1
+  scope                = var.azure_container_registry_id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_user_assigned_identity.mi_container_instance.principal_id
+}
+
 resource "azurerm_container_group" "instance" {
   name                = var.name
   location            = var.location
@@ -7,7 +27,7 @@ resource "azurerm_container_group" "instance" {
     for_each = var.identity != null ? [var.identity] : []
     content {
       type         = identity.value.type
-      identity_ids = identity.value.identity_ids
+      identity_ids = identity.value.identity_ids == null ? [azurerm_user_assigned_identity.mi_container_instance.id] : identity.value.identity_ids
     }
   }
   dynamic "init_container" {
@@ -258,10 +278,10 @@ resource "azurerm_container_group" "instance" {
   dynamic "image_registry_credential" {
     for_each = var.image_registry_credential != null ? [var.image_registry_credential] : []
     content {
-      user_assigned_identity_id = lookup(image_registry_credential.value, "user_assigned_identity_id", null)
+      user_assigned_identity_id = var.azure_container_registry_id != null ? azurerm_user_assigned_identity.mi_container_instance.id : lookup(image_registry_credential.value, "user_assigned_identity_id", null)
       username                  = lookup(image_registry_credential.value, "username", null)
       password                  = lookup(image_registry_credential.value, "password", null)
-      server                    = user_assigned_identity_id.value.server
+      server                    = image_registry_credential.value.server
     }
   }
   priority       = var.priority

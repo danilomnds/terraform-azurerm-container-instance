@@ -21,7 +21,9 @@ variable "identity" {
     type         = string
     identity_ids = optional(list(string))
   })
-  default = null
+  default = {
+    type = "UserAssigned"
+  }
 }
 
 variable "init_container" {
@@ -208,6 +210,11 @@ variable "zones" {
 variable "tags" {
   type    = map(string)
   default = {}
+}
+
+variable "azure_container_registry_id" {
+  type = string
+  default = null
 }
 
 variable "azure_ad_groups" {

@@ -9,7 +9,7 @@ Module developed to standardize the Container Instance creation.
 
 | Module Version | Terraform Version | AzureRM Version |
 |----------------|-------------------| --------------- |
-| v1.0.0         | v1.9.8            | 4.9.0           |
+| v1.0.0         | v1.10.3            | 4.14.0           |
 
 ## Specifying a version
 
