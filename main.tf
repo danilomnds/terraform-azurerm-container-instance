@@ -19,6 +19,7 @@ resource "azurerm_role_assignment" "mi_acr_pull" {
 }
 
 resource "azurerm_container_group" "instance" {
+  depends_on = [ azurerm_user_assigned_identity.mi_container_instance, azurerm_role_assignment.mi_acr_pull ]
   name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -154,23 +155,23 @@ resource "azurerm_container_group" "instance" {
   dynamic "container" {
     for_each = length(var.container) > 1 ? slice(var.container, 1, length(var.container)) : []
     content {
-      name         = var.container.name
-      image        = var.container.image
-      cpu          = var.container.cpu
-      memory       = var.container.memory
-      cpu_limit    = lookup(var.container, "cpu_limit", null)
-      memory_limit = lookup(var.container, "memory_limit", null)
-      dynamic "ports" {
-        for_each = length(var.container) > 1 ? [] : container.ports
+      name         = container.value.name
+      image        = container.value.image
+      cpu          = container.value.cpu
+      memory       = container.value.memory
+      cpu_limit    = lookup(container.value, "cpu_limit", null)
+      memory_limit = lookup(container.value, "memory_limit", null)
+      dynamic "ports" {        
+        for_each = container.value.ports != null ? [container.value.ports] : []
         content {
           port     = lookup(ports.value, "port", null)
           protocol = lookup(ports.value, "protocol", "TCP")
         }
       }
-      environment_variables        = lookup(var.container, "environment_variables", null)
-      secure_environment_variables = lookup(var.container, "secure_environment_variables", null)
+      environment_variables        = lookup(container.value, "environment_variables", null)
+      secure_environment_variables = lookup(container.value, "secure_environment_variables", null)
       dynamic "readiness_probe" {
-        for_each = length(var.container) > 1 ? [] : container.readiness_probe
+        for_each = container.value.readiness_probe != null ? [container.value.readiness_probe] : []        
         content {
           exec = lookup(readiness_probe.value, "exec", null)
           dynamic "http_get" {
@@ -190,7 +191,7 @@ resource "azurerm_container_group" "instance" {
         }
       }
       dynamic "liveness_probe" {
-        for_each = length(var.container) > 1 ? [] : container.liveness_probe
+        for_each = container.value.liveness_probe != null ? [container.value.liveness_probe] : []
         content {
           exec = lookup(liveness_probe.value, "exec", null)
           dynamic "http_get" {
@@ -209,9 +210,9 @@ resource "azurerm_container_group" "instance" {
           timeout_seconds       = lookup(liveness_probe.value, "timeout_seconds", null)
         }
       }
-      commands = lookup(var.container, "commands", null)
+      commands = lookup(container.value, "commands", null)
       dynamic "volume" {
-        for_each = length(var.container) > 1 ? [] : container.volume
+        for_each = container.value.volume != null ? [container.value.volume] : []
         content {
           name                 = volume.value.name
           mount_path           = volume.value.mount_path
@@ -232,7 +233,7 @@ resource "azurerm_container_group" "instance" {
         }
       }
       dynamic "security" {
-        for_each = length(var.container) > 1 ? [] : container.security
+        for_each = container.value.security != null ? [container.value.security] : []
         content {
           privilege_enabled = security.value.privilege_enabled
         }

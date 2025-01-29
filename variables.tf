@@ -229,7 +229,7 @@ variable "container_instance_contributor" {
 }
 
 variable "resource_group_reader" {
-  description = "Allows the Event Hub owner to get write and delete the keys on eventhub only. "
+  description = "Allows the Event Hub owner to get write and delete the keys on eventhub only"
   type        = bool
   default     = false
 }

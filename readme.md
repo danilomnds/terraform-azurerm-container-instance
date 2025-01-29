@@ -9,7 +9,7 @@ Module developed to standardize the Container Instance creation.
 
 | Module Version | Terraform Version | AzureRM Version |
 |----------------|-------------------| --------------- |
-| v1.0.0         | v1.10.3            | 4.14.0           |
+| v1.0.0         | v1.10.5           | 4.16.0           |
 
 ## Specifying a version
 
@@ -88,7 +88,6 @@ output "id" {
 | azure_ad_groups | list of azure AD groups that will be granted the Reader role  | `list` | `[]` | No |
 | container_instance_contributor | grantees container instance contributor custom role | `bool` | `true` | No |
 | resource_group_reader | reader access on container instance resource group | `bool` | `false` | No |
-| data_sender | allows send access to azure event hubs resources | `bool` | `true` | No |
 
 ## Output variables
 
@@ -98,5 +97,5 @@ output "id" {
 
 ## Documentation
 
-Terraform Event Hub Namespace: <br>
+Terraform Container Group (instance): <br>
 [https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_group)<br>
